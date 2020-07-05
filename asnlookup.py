@@ -1,5 +1,4 @@
 #!/usr/bin/python
-# Tested on Python 2.7 and 3.5
 
 import csv
 import sys
@@ -19,15 +18,13 @@ def banner():
         ____ ____ _  _ _    ____ ____ _  _ _  _ ___
         |__| [__  |\ | |    |  | |  | |_/  |  | |__]
         |  | ___] | \| |___ |__| |__| | \_ |__| |
-
-         Author: Yassine Aboukir (@yassineaboukir)\n''')
+        ''')
 
 def parse_args():
     # parse the argument
     parser = argparse.ArgumentParser(epilog='\tExample: \r\npython ' + sys.argv[0] + " -o twitter")
     org = parser.add_argument('-o', '--org', help="Organization to look up", required=True)
-    nmapscan = parser.add_argument('-n', '--nmapscan', help="Run Nmap", required=False, action="store", nargs='?', const="-p 1-65535 -T4 -A -v")
-    masscan = parser.add_argument('-m', '--masscan', help="Run Masscan", required=False, action="store", nargs='?', const="-p0-65535 --rate 200")
+    output = parser.add_argument('--output', help="Output path (optional)", required=False)
     return parser.parse_args()
 
 def check_licensekey():
@@ -160,36 +157,10 @@ def extract_ip(asn, organization):
     else:
         print(colored("[*] Sorry! We couldn't find the organization's ASN and IP addresses.", "red"))
 
-def scanning(n, m, organization):
-    # Only allow one scanner choice
-    if n and m:
-    	print(colored("\n[*] Please only select one port scanner: -m --> Masscan or -n --> Nmap.", "red"))
-
-    # Run Nmap on the IP addresses if -m argument is set
-    elif n:
-        if os.path.isfile("./output/" + organization + '_ipv4.txt') == True:
-            print(colored("\n[*] Running port scanning using Nmap on IPV4 ...", "red"))
-            os.system("nmap {} -iL {}".format(n, "./output/" + organization + "_ipv4.txt"))
-
-            if os.path.isfile("./output/" + organization + '_ipv6.txt') == True:
-                print(colored("\n[*] Running port scanning using Nmap on IPV6 ...\n", "red"))
-                os.system("nmap {} -iL {}".format(n, "./output/" + organization + "_ipv6.txt"))
-        else: pass
-
-    # Run Masscan on the IP addresses if -m argument is set
-    elif m:
-    	if os.path.isfile("./output/" + organization + '_ipv4.txt') == True:
-        	print(colored("\n[*] Running port scanning using Masscan (Warning: supports only IPV4)...", "red"))
-        	os.system("masscan {} -iL {}".format(m, "./output/" + organization + "_ipv4.txt"))
-    else: pass
-
 if __name__ == '__main__':
     banner()
-    nmapscan = parse_args().nmapscan
-    masscan = parse_args().masscan
     org = parse_args().org \
                         .replace(' ', '_')
     check_licensekey()
     download_db()
     extract_ip(extract_asn(org), org)
-    scanning(nmapscan, masscan, org)
