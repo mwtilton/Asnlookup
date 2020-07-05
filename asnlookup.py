@@ -8,10 +8,7 @@ import re
 import os
 from termcolor import colored
 from bs4 import BeautifulSoup
-from config import *
 requests.packages.urllib3.disable_warnings()
-
-download_link = 'https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-ASN-CSV&license_key={}&suffix=zip'.format(license_key)
 
 def banner():
         print('''
@@ -24,10 +21,11 @@ def parse_args():
     # parse the argument
     parser = argparse.ArgumentParser(epilog='\tExample: \r\npython ' + sys.argv[0] + " -o twitter")
     org = parser.add_argument('-o', '--org', help="Organization to look up", required=True)
+    license = parser.add_argument('-l', '--license', help="License to use for maxmind.", required=True)
     output = parser.add_argument('--output', help="Output path (optional)", required=False)
     return parser.parse_args()
 
-def check_licensekey():
+def check_licensekey(license_key):
     if not license_key:
         print (colored('[!] Please enter a valid Maxmind user license key in config.py.', 'red'))
         sys.exit(1)
@@ -43,7 +41,7 @@ def check_licensekey():
             print (e)
             sys.exit(1)
 
-def download_db():
+def download_db(download_link):
     global input
     useragent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:64.0) Gecko/20100101 Firefox/64.0'
     # Download a local copy of ASN database from maxmind.com
@@ -159,8 +157,13 @@ def extract_ip(asn, organization):
 
 if __name__ == '__main__':
     banner()
-    org = parse_args().org \
-                        .replace(' ', '_')
-    check_licensekey()
-    download_db()
+    org = (parse_args().org).replace(' ', '_')
+    license_key = parse_args().license
+    
+    download_link = 'https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-ASN-CSV&license_key={}&suffix=zip'.format(license_key)
+
+    check_licensekey(license_key)
+    
+    download_db(download_link)
+    
     extract_ip(extract_asn(org), org)
