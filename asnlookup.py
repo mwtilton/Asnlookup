@@ -22,7 +22,7 @@ def parse_args():
     parser = argparse.ArgumentParser(epilog='\tExample: \r\npython ' + sys.argv[0] + " -o twitter")
     org = parser.add_argument('-o', '--org', help="Organization to look up", required=True)
     license = parser.add_argument('-l', '--license', help="License to use for maxmind.", required=True)
-    output = parser.add_argument('--output', help="Output path (optional)", required=False)
+    output = parser.add_argument('--output', help="Output path (optional)", required=False, default=None)
     return parser.parse_args()
 
 def check_licensekey(license_key):
@@ -99,19 +99,16 @@ def extract_asn(organization):
         if organization.upper().replace('_', ' ') in row[2].upper():
             return(row[1])
 
+def extract_ip(asn, organization, output_path):
 
-def extract_ip(asn, organization):
+    if not output_path:
+        output_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'output')
 
-    path_ipv6 = os.path.dirname(os.path.realpath(__file__)) + "/output/" + organization + "_ipv6.txt"
-    path_ipv4 = os.path.dirname(os.path.realpath(__file__)) + "/output/" + organization + "_ipv4.txt"
+    path_ipv6 = os.path.join(output_path, organization + "_ipv6.txt")
+    path_ipv4 = os.path.join(output_path, organization + "_ipv4.txt")
 
-    if asn:
-        if not os.path.exists("output"):
-            os.makedirs("output")
-        elif os.path.isfile('./output/' + organization + '.txt') == True:
-            os.system('cd ./output/ && rm -f ' + organization + '.txt')
-        else:
-            pass
+    if not os.path.exists(output_path):
+        os.makedirs(output_path)
 
         ipinfo = "https://ipinfo.io/"
 
@@ -140,7 +137,7 @@ def extract_ip(asn, organization):
         if ipv4:
             print(colored("\n[*] IPv4 addresses saved to: ", "green"))
             print(colored("{}\n".format(path_ipv4), "yellow"))
-            with open("./output/" + organization + "_ipv4.txt", "w") as dump:
+            with open(path_ipv4, "w") as dump:
                 for i in ipv4:
                     dump.write(i + "\n")
                     print(colored(i, "yellow"))
@@ -148,7 +145,7 @@ def extract_ip(asn, organization):
         if ipv6:
             print(colored("\n[*] IPv6 addresses saved to: ", "green"))
             print(colored("{}\n".format(path_ipv6), "yellow"))
-            with open("./output/" + organization + "_ipv6.txt", "w") as dump:
+            with open(path_ipv6, "w") as dump:
                 for i in ipv6:
                     dump.write(i + "\n")
                     print(colored(i, "yellow"))
@@ -159,11 +156,12 @@ if __name__ == '__main__':
     banner()
     org = (parse_args().org).replace(' ', '_')
     license_key = parse_args().license
+    output_path = parse_args().output
     
     download_link = 'https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-ASN-CSV&license_key={}&suffix=zip'.format(license_key)
 
     check_licensekey(license_key)
     
     download_db(download_link)
-    
-    extract_ip(extract_asn(org), org)
+
+    extract_ip(extract_asn(org), org, output_path)
