@@ -42,16 +42,16 @@ def check_licensekey(license_key):
             sys.exit(1)
 
 def download_db(download_link, org, useragent):
-    geolite_asn_zip_filepath = '/tmp/{org}/GeoLite2-ASN-CSV.zip'
-    geolite_asn_filesize_filepath = '/tmp/{org}/filesize.txt'
+    geolite_asn_zip_filepath = f'/tmp/{org}/GeoLite2-ASN-CSV.zip'
+    geolite_asn_filesize_filepath = f'/tmp/{org}/filesize.txt'
     
-    geolite_asn_ipv4_csv_filepath = '/tmp/{org}/GeoLite2-ASN-Blocks-IPv4.csv'
-    geolite_asn_ipv6_csv_filepath = '/tmp/{org}/GeoLite2-ASN-Blocks-IPv6.csv'
+    geolite_asn_ipv4_csv_filepath = f'/tmp/{org}/GeoLite2-ASN-Blocks-IPv4.csv'
+    geolite_asn_ipv6_csv_filepath = f'/tmp/{org}/GeoLite2-ASN-Blocks-IPv6.csv'
 
     # Download a local copy of ASN database from maxmind.com
     if (os.path.isfile(geolite_asn_ipv4_csv_filepath)) == False:
         print(colored("[*] Downloading ASN database ...\n", "red"))
-        os.system(f"wget -O {geolite_asn_zip_filepath} '{download_link}' && unzip {geolite_asn_zip_filepath} && rm -f {geolite_asn_zip_filepath} && mv GeoLite*/* . && rm -f {geolite_asn_ipv6_csv_filepath} && rm -f COPYRIGHT.txt LICENSE.txt && rm -rf GeoLite*/")
+        os.system(f"wget -O {geolite_asn_zip_filepath} {download_link} && unzip {geolite_asn_zip_filepath} && rm -f {geolite_asn_zip_filepath} && mv GeoLite*/* . && rm -f {geolite_asn_ipv6_csv_filepath} && rm -f COPYRIGHT.txt LICENSE.txt && rm -rf GeoLite*/")
         print(colored("\nDone!\n", "red"))
 
         # Extracting and saving database file size locally
@@ -61,7 +61,7 @@ def download_db(download_link, org, useragent):
             print(colored("[*] Timed out while trying to connect to the database server, please run the tool again.", "red"))
             sys.exit(1)
 
-        with open(geolite_asn_filesize_filepath, "w") as filesize:
+        with open(geolite_asn_filesize_filepath, "w+") as filesize:
             filesize.write(response.headers['Content-Length'])
     # else:
     #     # Checking if there is a new database change and download a new copy if applicable
