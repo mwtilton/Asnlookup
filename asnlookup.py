@@ -41,11 +41,11 @@ def check_licensekey(license_key):
             print (e)
             sys.exit(1)
 
-def download_db(download_link):
-    global input
-    useragent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:64.0) Gecko/20100101 Firefox/64.0'
+def download_db(download_link, useragent):
+    #global input
+    
     # Download a local copy of ASN database from maxmind.com
-    if (os.path.isfile('./GeoLite2-ASN-Blocks-IPv4.csv')) == False:
+    if (os.path.isfile('/tmp/GeoLite2-ASN-Blocks-IPv4.csv')) == False:
         print(colored("[*] Downloading ASN database ...\n", "red"))
         os.system("wget -O GeoLite2-ASN-CSV.zip '{}' && unzip GeoLite2-ASN-CSV.zip && rm -f GeoLite2-ASN-CSV.zip && mv GeoLite*/* . && rm -f GeoLite2-ASN-Blocks-IPv6.csv && rm -f COPYRIGHT.txt LICENSE.txt && rm -rf GeoLite*/".format(download_link))
         print(colored("\nDone!\n", "red"))
@@ -57,7 +57,7 @@ def download_db(download_link):
             print(colored("[*] Timed out while trying to connect to the database server, please run the tool again.", "red"))
             sys.exit(1)
 
-        with open("filesize.txt", "w") as filesize:
+        with open("/tmp/filesize.txt", "w") as filesize:
             filesize.write(response.headers['Content-Length'])
     else:
         # Checking if there is a new database change and download a new copy if applicable
@@ -66,7 +66,7 @@ def download_db(download_link):
         except:
             print(colored("[*] Timed out while trying to the database server, please run the tool again.", "red"))
             sys.exit(1)
-        with open("filesize.txt", "r") as filesize:
+        with open("/tmp/filesize.txt", "r") as filesize:
             for line in filesize:
                 if line == response.headers['Content-Length']:
                     pass
@@ -86,13 +86,13 @@ def download_db(download_link):
                             print(colored("[*] Timed out while trying to the database server, please run the tool again.", "red"))
                             sys.exit(1)
                         print("\nDone!\n")
-                        with open("filesize.txt", "w") as filesize:
+                        with open("/tmp/filesize.txt", "w") as filesize:
                             filesize.write(response.headers['Content-Length'])
                     else: pass
 
 def extract_asn(organization):
     #read csv, and split on "," the line
-    asn_ipv4 = csv.reader(open('GeoLite2-ASN-Blocks-IPv4.csv', "r"), delimiter=",")
+    asn_ipv4 = csv.reader(open('/tmp/GeoLite2-ASN-Blocks-IPv4.csv', "r"), delimiter=",")
     #loop through csv list
     for row in asn_ipv4:
         #if current rows 2nd value is equal to input, print that row
@@ -158,10 +158,11 @@ if __name__ == '__main__':
     license_key = parse_args().license
     output_path = parse_args().output
     
+    useragent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:64.0) Gecko/20100101 Firefox/64.0'
     download_link = 'https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-ASN-CSV&license_key={}&suffix=zip'.format(license_key)
 
     check_licensekey(license_key)
     
-    download_db(download_link)
+    download_db(download_link, useragent)
 
     extract_ip(extract_asn(org), org, output_path)
