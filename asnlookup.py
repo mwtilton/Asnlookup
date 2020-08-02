@@ -6,8 +6,11 @@ import argparse
 import requests
 import re
 import os
+
 from termcolor import colored
 from bs4 import BeautifulSoup
+from zipfile import ZipFile
+
 requests.packages.urllib3.disable_warnings()
 
 def banner():
@@ -54,7 +57,11 @@ def download_db(download_link, org, useragent):
     # Download a local copy of ASN database from maxmind.com
     if (os.path.isfile(geolite_asn_ipv4_csv_filepath)) == False:
         print(colored("[*] Downloading ASN database ...\n", "red"))
-        os.system(f"wget -O {geolite_asn_zip_filepath} '{download_link}' && unzip {geolite_asn_zip_filepath} && rm -f {geolite_asn_zip_filepath} && mv GeoLite*/* . && rm -f {geolite_asn_ipv6_csv_filepath} && rm -f COPYRIGHT.txt LICENSE.txt && rm -rf GeoLite*/")
+        os.system(f"wget -O {geolite_asn_zip_filepath} '{download_link}')" #&& unzip {geolite_asn_zip_filepath} && rm -f {geolite_asn_zip_filepath} && rm -f {geolite_asn_ipv6_csv_filepath} && rm -f COPYRIGHT.txt LICENSE.txt && rm -rf GeoLite*/")
+        
+        with ZipFile(path_to_zip_file, 'r') as zip_ref:
+            zip_ref.extractall(f'/tmp/{org}')
+        
         print(colored("\nDone!\n", "red"))
 
         # Extracting and saving database file size locally
@@ -99,7 +106,7 @@ def download_db(download_link, org, useragent):
 
 def extract_asn(organization):
     #read csv, and split on "," the line
-    asn_ipv4 = csv.reader(open('/tmp/GeoLite2-ASN-Blocks-IPv4.csv', "r"), delimiter=",")
+    asn_ipv4 = csv.reader(open(f'/tmp/{organization}/GeoLite2-ASN-Blocks-IPv4.csv', "r"), delimiter=",")
     #loop through csv list
     for row in asn_ipv4:
         #if current rows 2nd value is equal to input, print that row
@@ -108,14 +115,8 @@ def extract_asn(organization):
 
 def extract_ip(asn, organization, output_path):
 
-    if not output_path:
-        output_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'output')
-
     path_ipv6 = os.path.join(output_path, organization + "_ipv6.txt")
     path_ipv4 = os.path.join(output_path, organization + "_ipv4.txt")
-
-    if not os.path.exists(output_path):
-        os.makedirs(output_path)
 
     ipinfo = "https://ipinfo.io/"
 
@@ -163,6 +164,12 @@ if __name__ == '__main__':
     license_key = parse_args().license
     output_path = parse_args().output
     
+    if output_path is None:
+        output_path = os.path.join(f'/tmp/{organization}', 'output')
+
+    if not os.path.exists(output_path):
+        os.makedirs(output_path)
+
     useragent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:64.0) Gecko/20100101 Firefox/64.0'
     download_link = 'https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-ASN-CSV&license_key={}&suffix=zip'.format(license_key)
 
