@@ -65,46 +65,6 @@ def download_db(download_link, org, useragent):
         os.system(f"mv /tmp/{org}/Geo*/GeoLite2-ASN-Blocks-IPv4.csv {geolite_asn_ipv4_csv_filepath}")
         print(colored("\nDone!\n", "red"))
 
-        # # Extracting and saving database file size locally
-        # try:
-        #     response = requests.head("{}".format(download_link), headers={'User-Agent': useragent}, timeout = 10)
-        # except:
-        #     print(colored("[*] Timed out while trying to connect to the database server, please run the tool again.", "red"))
-        #     sys.exit(1)
-
-        # with open(geolite_asn_filesize_filepath, "w+") as filesize:
-        #     filesize.write(response.headers['Content-Length'])
-    # else:
-    #     # Checking if there is a new database change and download a new copy if applicable
-    #     try:
-    #         response = requests.head("{}".format(download_link), headers={'User-Agent': useragent}, timeout = 10)
-    #     except:
-    #         print(colored("[*] Timed out while trying to the database server, please run the tool again.", "red"))
-    #         sys.exit(1)
-    #     with open(geolite_asn_filesize_filepath, "r") as filesize:
-    #         for line in filesize:
-    #             if line == response.headers['Content-Length']:
-    #                 pass
-    #             else:
-    #                 print(colored("[*] It seems like you have not updated the database.","red"))
-    #                 try: input = raw_input #fixes python 2.x and 3.x input keyword
-    #                 except NameError: pass
-    #                 choice = input(colored("[?] Do you want to update now? [Y]es [N]o, default: [N] ", "red"))
-    #                 if choice.upper() == "Y":
-    #                     os.system("rm -rf GeoLite2*")
-    #                     print(colored("[*] Downloading a new copy of the database ...\n","red"))
-    #                     os.system("wget -O GeoLite2-ASN-CSV.zip '{} && unzip GeoLite2-ASN-CSV.zip && rm -f GeoLite2-ASN-CSV.zip && mv GeoLite*/* . && rm -f GeoLite2-ASN-Blocks-IPv6.csv  && rm -f COPYRIGHT.txt LICENSE.txt && rm -rf GeoLite*/".format(download_link))
-
-    #                     try:
-    #                         response = requests.get("{}".format(download_link), headers={'User-Agent': useragent}, timeout = 10)
-    #                     except:
-    #                         print(colored("[*] Timed out while trying to the database server, please run the tool again.", "red"))
-    #                         sys.exit(1)
-    #                     print("\nDone!\n")
-    #                     with open("/tmp/filesize.txt", "w") as filesize:
-    #                         filesize.write(response.headers['Content-Length'])
-    #                 else: pass
-
 def extract_asn(organization):
     #read csv, and split on "," the line
     asn_ipv4 = csv.reader(open(f'/tmp/{organization}/GeoLite2-ASN-Blocks-IPv4.csv', "r"), delimiter=",")
@@ -117,8 +77,8 @@ def extract_asn(organization):
 
 def extract_ip(asn, organization, output_path):
 
-    path_ipv6 = os.path.join(output_path, organization + "_ipv6.txt")
-    path_ipv4 = os.path.join(output_path, organization + "_ipv4.txt")
+    path_ipv6 = os.path.join(f"{output_path}/{organization}", organization + "_ipv6.txt")
+    path_ipv4 = os.path.join(f"{output_path}/{organization}", organization + "_ipv4.txt")
 
     ipinfo = "https://ipinfo.io/"
 
