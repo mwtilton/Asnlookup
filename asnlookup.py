@@ -48,10 +48,13 @@ def download_db(download_link, org, useragent):
     geolite_asn_ipv4_csv_filepath = f'/tmp/{org}/GeoLite2-ASN-Blocks-IPv4.csv'
     geolite_asn_ipv6_csv_filepath = f'/tmp/{org}/GeoLite2-ASN-Blocks-IPv6.csv'
 
+    if (os.path.exists(f'/tmp/{org}') == False):
+        os.makedirs(f'/tmp/{org}')
+
     # Download a local copy of ASN database from maxmind.com
     if (os.path.isfile(geolite_asn_ipv4_csv_filepath)) == False:
         print(colored("[*] Downloading ASN database ...\n", "red"))
-        os.system(f"wget -O {geolite_asn_zip_filepath} {download_link} && unzip {geolite_asn_zip_filepath} && rm -f {geolite_asn_zip_filepath} && mv GeoLite*/* . && rm -f {geolite_asn_ipv6_csv_filepath} && rm -f COPYRIGHT.txt LICENSE.txt && rm -rf GeoLite*/")
+        os.system(f"wget -O {geolite_asn_zip_filepath} '{download_link}' && unzip {geolite_asn_zip_filepath} && rm -f {geolite_asn_zip_filepath} && mv GeoLite*/* . && rm -f {geolite_asn_ipv6_csv_filepath} && rm -f COPYRIGHT.txt LICENSE.txt && rm -rf GeoLite*/")
         print(colored("\nDone!\n", "red"))
 
         # Extracting and saving database file size locally
