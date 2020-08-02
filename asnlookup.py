@@ -57,22 +57,23 @@ def download_db(download_link, org, useragent):
     # Download a local copy of ASN database from maxmind.com
     if (os.path.isfile(geolite_asn_ipv4_csv_filepath)) == False:
         print(colored("[*] Downloading ASN database ...\n", "red"))
-        os.system(f"wget -O {geolite_asn_zip_filepath} '{download_link}')" #&& unzip {geolite_asn_zip_filepath} && rm -f {geolite_asn_zip_filepath} && rm -f {geolite_asn_ipv6_csv_filepath} && rm -f COPYRIGHT.txt LICENSE.txt && rm -rf GeoLite*/")
+        os.system(f"wget -O {geolite_asn_zip_filepath} '{download_link}')") #&& unzip {geolite_asn_zip_filepath} && rm -f {geolite_asn_zip_filepath} && rm -f {geolite_asn_ipv6_csv_filepath} && rm -f COPYRIGHT.txt LICENSE.txt && rm -rf GeoLite*/")
         
-        with ZipFile(path_to_zip_file, 'r') as zip_ref:
+        with ZipFile(geolite_asn_zip_filepath, 'r') as zip_ref:
             zip_ref.extractall(f'/tmp/{org}')
         
+        os.system(f"mv /tmp/{org}/Geo* {geolite_asn_ipv4_csv_filepath}")
         print(colored("\nDone!\n", "red"))
 
-        # Extracting and saving database file size locally
-        try:
-            response = requests.head("{}".format(download_link), headers={'User-Agent': useragent}, timeout = 10)
-        except:
-            print(colored("[*] Timed out while trying to connect to the database server, please run the tool again.", "red"))
-            sys.exit(1)
+        # # Extracting and saving database file size locally
+        # try:
+        #     response = requests.head("{}".format(download_link), headers={'User-Agent': useragent}, timeout = 10)
+        # except:
+        #     print(colored("[*] Timed out while trying to connect to the database server, please run the tool again.", "red"))
+        #     sys.exit(1)
 
-        with open(geolite_asn_filesize_filepath, "w+") as filesize:
-            filesize.write(response.headers['Content-Length'])
+        # with open(geolite_asn_filesize_filepath, "w+") as filesize:
+        #     filesize.write(response.headers['Content-Length'])
     # else:
     #     # Checking if there is a new database change and download a new copy if applicable
     #     try:
