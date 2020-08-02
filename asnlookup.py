@@ -62,7 +62,7 @@ def download_db(download_link, org, useragent):
         with ZipFile(geolite_asn_zip_filepath, 'r') as zip_ref:
             zip_ref.extractall(f'/tmp/{org}')
         
-        os.system(f"mv /tmp/{org}/GeoLite2-ASN-Blocks-IPv4.csv {geolite_asn_ipv4_csv_filepath}")
+        os.system(f"mv /tmp/{org}/Geo*/GeoLite2-ASN-Blocks-IPv4.csv {geolite_asn_ipv4_csv_filepath}")
         print(colored("\nDone!\n", "red"))
 
         # # Extracting and saving database file size locally
