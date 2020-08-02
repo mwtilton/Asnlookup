@@ -112,6 +112,7 @@ def extract_asn(organization):
     for row in asn_ipv4:
         #if current rows 2nd value is equal to input, print that row
         if organization.upper().replace('_', ' ') in row[2].upper():
+            print(colored(f">> {organization}: {row[1]} {row[2]}", "yellow"))
             return(row[1])
 
 def extract_ip(asn, organization, output_path):
@@ -178,4 +179,4 @@ if __name__ == '__main__':
     
     download_db(download_link, org, useragent)
 
-    #extract_ip(extract_asn(org), org, output_path)
+    extract_ip(extract_asn(org), org, output_path)
