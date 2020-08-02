@@ -46,10 +46,10 @@ def check_licensekey(license_key):
 
 def download_db(download_link, org, useragent):
     geolite_asn_zip_filepath = f'/tmp/{org}/GeoLite2-ASN-CSV.zip'
-    geolite_asn_filesize_filepath = f'/tmp/{org}/filesize.txt'
+    #geolite_asn_filesize_filepath = f'/tmp/{org}/filesize.txt'
     
     geolite_asn_ipv4_csv_filepath = f'/tmp/{org}/GeoLite2-ASN-Blocks-IPv4.csv'
-    geolite_asn_ipv6_csv_filepath = f'/tmp/{org}/GeoLite2-ASN-Blocks-IPv6.csv'
+    #geolite_asn_ipv6_csv_filepath = f'/tmp/{org}/GeoLite2-ASN-Blocks-IPv6.csv'
 
     if (os.path.exists(f'/tmp/{org}') == False):
         os.makedirs(f'/tmp/{org}')
@@ -57,12 +57,12 @@ def download_db(download_link, org, useragent):
     # Download a local copy of ASN database from maxmind.com
     if (os.path.isfile(geolite_asn_ipv4_csv_filepath)) == False:
         print(colored("[*] Downloading ASN database ...\n", "red"))
-        os.system(f"wget -O {geolite_asn_zip_filepath} '{download_link}')") #&& unzip {geolite_asn_zip_filepath} && rm -f {geolite_asn_zip_filepath} && rm -f {geolite_asn_ipv6_csv_filepath} && rm -f COPYRIGHT.txt LICENSE.txt && rm -rf GeoLite*/")
+        os.system(f"wget -O {geolite_asn_zip_filepath} '{download_link}'") #&& unzip {geolite_asn_zip_filepath} && rm -f {geolite_asn_zip_filepath} && rm -f {geolite_asn_ipv6_csv_filepath} && rm -f COPYRIGHT.txt LICENSE.txt && rm -rf GeoLite*/")
         
         with ZipFile(geolite_asn_zip_filepath, 'r') as zip_ref:
             zip_ref.extractall(f'/tmp/{org}')
         
-        os.system(f"mv /tmp/{org}/Geo* {geolite_asn_ipv4_csv_filepath}")
+        os.system(f"mv /tmp/{org}/GeoLite2-ASN-Blocks-IPv4.csv {geolite_asn_ipv4_csv_filepath}")
         print(colored("\nDone!\n", "red"))
 
         # # Extracting and saving database file size locally
@@ -166,7 +166,7 @@ if __name__ == '__main__':
     output_path = parse_args().output
     
     if output_path is None:
-        output_path = os.path.join(f'/tmp/{organization}', 'output')
+        output_path = os.path.join(f'/tmp/{org}', 'output')
 
     if not os.path.exists(output_path):
         os.makedirs(output_path)
