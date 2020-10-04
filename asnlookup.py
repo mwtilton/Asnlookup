@@ -132,6 +132,7 @@ if __name__ == '__main__':
     if output_path is None:
         output_path = os.path.join(f'/tmp/{org}', 'output')
 
+    print("ASN Output Path: {output_path}")
     if not os.path.exists(output_path):
         os.makedirs(output_path)
 
