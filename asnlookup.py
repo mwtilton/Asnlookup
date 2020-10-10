@@ -80,8 +80,8 @@ def extract_asn(organization):
 
 def extract_ip(asn, organization, output_path):
 
-    path_ipv6 = os.path.join(f"{output_path}/{organization}", organization + "_ipv6.txt")
-    path_ipv4 = os.path.join(f"{output_path}/{organization}", organization + "_ipv4.txt")
+    path_ipv6 = os.path.join(f"{output_path}/ipv6.txt")
+    path_ipv4 = os.path.join(f"{output_path}/ipv4.txt")
 
     ipinfo = "https://ipinfo.io/"
 
