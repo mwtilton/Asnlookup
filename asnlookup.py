@@ -109,16 +109,21 @@ def extract_ip(asn, organization, output_path):
         sys.exit(1)
     
     # Requires Rest between API calls, otherwise it will return none
-    sleep(2)
+    sleep(1)
     jsondata = response.json()
     # print(json.dumps(jsondata, sort_keys=True, indent=4))    
-    print(json.dumps(jsondata['data']['ipv4_prefixes'], sort_keys=True, indent=4))    
+    # print(json.dumps(jsondata['data']['ipv4_prefixes'], sort_keys=True, indent=4))    
     
     ipv4 = {}
-    print(colored("[*] IP addresses owned by {} are the following (IPv4 or IPv6):".format(organization),"green"))
+    
     for cidr in jsondata['data']['ipv4_prefixes']:
         # print(cidr['prefix'])
-        ipv4.update({cidr['prefix']:''})
+        ipv4.update({cidr['prefix']:cidr['description']})
+    # print(len(jsondata['data']['ipv4_prefixes']))
+    # print(len(ipv4))
+    
+    return(ipv4)
+    # print(colored(ipv4, "blue"))
     # html = response.content
     # if html is None:
     #     print(colored("[*] no html content found.", "red"))
@@ -196,9 +201,35 @@ if __name__ == '__main__':
     download_db(download_link, org, useragent, output_path)
 
     extracted_asn_output = extract_asn(org, output_path)
-    # print(extracted_asn_output)
+    with open(f'{output_path}/extracted_asn_output.json', 'w') as json_file:
+        json.dump(extracted_asn_output, json_file)
+    # print(colored(extracted_asn_output,"cyan"))
     # print(len(extracted_asn_output))
 
+    extracted_ip_output = {}
     for key, value in extracted_asn_output.items():
-        print(colored(key, "blue"))
-        extract_ip(key, org, output_path)
+        print(colored(f"{key}: {value}", "blue"))
+        extracted_ip_output.update({key:extract_ip(key, org, output_path)})
+    
+    print(colored(f"[*] IP addresses owned by {org} are the following:","green"))
+    # print(colored(extracted_ip_output, "blue"))
+    print(json.dumps(extracted_ip_output, sort_keys=True, indent=4))
+
+    with open(f'{output_path}/extracted_ip_output.json', 'w') as json_file:
+        json.dump(extracted_ip_output, json_file)
+
+    print(colored(f"[*] DeDupe IP addresses owned by {org} are the following:","green"))
+    # for key, value in extracted_asn_output.items():
+    dedupeipaddresses = {}
+    count = 0
+    for key, value in extracted_ip_output.items():
+        count += len(value)
+        for ky, val in value.items():
+            # print(colored(ky, "blue"))
+            dedupeipaddresses.update({ky:''})
+    
+    with open(f'{output_path}/dedupe_ip_addresses.json', 'w') as json_file:
+        json.dump(extracted_ip_output, json_file)
+    # print(json.dumps(dedupeipaddresses, sort_keys=True, indent=4))
+    # print(colored(count, "cyan"))
+    # print(len(dedupeipaddresses))
