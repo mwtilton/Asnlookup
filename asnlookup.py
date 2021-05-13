@@ -8,6 +8,7 @@ import re
 import os
 import json
 
+from time import sleep
 from termcolor import colored
 from bs4 import BeautifulSoup
 from zipfile import ZipFile
@@ -29,7 +30,7 @@ def parse_args():
     parser = argparse.ArgumentParser(epilog='\tExample: \r\npython ' + sys.argv[0] + " -o twitter")
     org = parser.add_argument('-o', '--org', help="Organization to look up", required=True)
     license = parser.add_argument('-l', '--license', help="License to use for maxmind.", required=True)
-    token = parser.add_argument('-t', '--token', help="Token to use for ipinfo.", required=True)
+    # token = parser.add_argument('-t', '--token', help="Token to use for ipinfo.", required=True)
     output = parser.add_argument('--output', help="Output path (optional)", required=False, default=None)
     return parser.parse_args()
 
@@ -75,16 +76,22 @@ def extract_asn(organization, output_path):
     #read csv, and split on "," the line
     asn_ipv4 = csv.reader(open(f'{output_path}/GeoLite2-ASN-Blocks-IPv4.csv', "r"), delimiter=",")
     #loop through csv list
+    output = {}
+
     for row in asn_ipv4:
         #if current rows 2nd value is equal to input, print that row
+        # print(colored(f">> {organization}: {row[1]} {row[2]}", "blue"))
         if organization.upper().replace('_', ' ') in row[2].upper():
-            print(colored(f">> {organization}: {row[1]} {row[2]}", "yellow"))
-            return(row[1])
+            # print(colored(f">> {organization}: {row[1]} {row[2]}", "yellow"))
+            output.update({row[1] : row[2]})
+            # extract_ip(row[1], organization, output_path)
+    
+    return(output)
 
-def extract_ip(asn, organization, output_path, token):
+def extract_ip(asn, organization, output_path):
 
     # path_ipv6 = os.path.join(f"{output_path}/ipv6.txt")
-    # path_ipv4 = os.path.join(f"{output_path}/ipv4.txt")
+    path_ipv4 = os.path.join(f"{output_path}/AS-{asn}-ipv4.txt")
 
     # ipinfo.io/[IP address]?token=
     # https://ipinfo.io/AS5586/json?token=
@@ -101,9 +108,17 @@ def extract_ip(asn, organization, output_path, token):
         print(colored("[*] Timed out while trying to the ASN lookup server, please run the tool again.", "red"))
         sys.exit(1)
     
-    # print(response.json())
-    print(json.dumps(response.json(), sort_keys=True, indent=4))    
-
+    # Requires Rest between API calls, otherwise it will return none
+    sleep(2)
+    jsondata = response.json()
+    # print(json.dumps(jsondata, sort_keys=True, indent=4))    
+    print(json.dumps(jsondata['data']['ipv4_prefixes'], sort_keys=True, indent=4))    
+    
+    ipv4 = {}
+    print(colored("[*] IP addresses owned by {} are the following (IPv4 or IPv6):".format(organization),"green"))
+    for cidr in jsondata['data']['ipv4_prefixes']:
+        # print(cidr['prefix'])
+        ipv4.update({cidr['prefix']:''})
     # html = response.content
     # if html is None:
     #     print(colored("[*] no html content found.", "red"))
@@ -121,7 +136,7 @@ def extract_ip(asn, organization, output_path, token):
     
     # print(soup)
 
-    # ipv4 = []
+    
     
     # for link in soup.find_all('a'):
     #     print(colored(link, "blue"))
@@ -142,15 +157,13 @@ def extract_ip(asn, organization, output_path, token):
     #         else: 
     #             pass
 
-    print(colored("[*] IP addresses owned by {} are the following (IPv4 or IPv6):".format(organization),"green"))
-
-    # if ipv4:
-    #     print(colored("\n[*] IPv4 addresses saved to: ", "green"))
-    #     print(colored("{}\n".format(path_ipv4), "yellow"))
-    #     with open(path_ipv4, "w") as dump:
-    #         for i in ipv4:
-    #             dump.write(i + "\n")
-    #             print(colored(i, "yellow"))
+    if ipv4:
+        print(colored(f"[*] IPv4 addresses saved to {path_ipv4}", "green"))
+        # print(colored("{}\n".format(path_ipv4), "yellow"))
+        with open(path_ipv4, "w") as dump:
+            for i in ipv4:
+                dump.write(i + "\n")
+                print(colored(i, "yellow"))
 
     # if ipv6:
     #     print(colored("\n[*] IPv6 addresses saved to: ", "green"))
@@ -164,7 +177,7 @@ if __name__ == '__main__':
     banner()
     org = (parse_args().org).replace(' ', '_')
     license_key = parse_args().license
-    token = parse_args().token
+    # token = parse_args().token
     output_path = os.path.join(parse_args().output, org)
     
     if output_path is None:
@@ -182,4 +195,10 @@ if __name__ == '__main__':
     
     download_db(download_link, org, useragent, output_path)
 
-    extract_ip(extract_asn(org, output_path), org, output_path, token)
+    extracted_asn_output = extract_asn(org, output_path)
+    # print(extracted_asn_output)
+    # print(len(extracted_asn_output))
+
+    for key, value in extracted_asn_output.items():
+        print(colored(key, "blue"))
+        extract_ip(key, org, output_path)
