@@ -88,7 +88,7 @@ def extract_asn(organization, output_path):
     
     return(output)
 
-def extract_ip(asn, organization, output_path):
+def extract_ip(asn, output_path):
 
     # path_ipv6 = os.path.join(f"{output_path}/ipv6.txt")
     path_ipv4 = os.path.join(f"{output_path}/AS-{asn}-ipv4.txt")
@@ -162,13 +162,13 @@ def extract_ip(asn, organization, output_path):
     #         else: 
     #             pass
 
-    if ipv4:
-        print(colored(f"[*] IPv4 addresses saved to {path_ipv4}", "green"))
-        # print(colored("{}\n".format(path_ipv4), "yellow"))
-        with open(path_ipv4, "w") as dump:
-            for i in ipv4:
-                dump.write(i + "\n")
-                print(colored(i, "yellow"))
+    # if ipv4:
+    #     print(colored(f"[*] IPv4 addresses saved to {path_ipv4}", "green"))
+    #     # print(colored("{}\n".format(path_ipv4), "yellow"))
+    #     with open(path_ipv4, "w") as dump:
+    #         for i in ipv4:
+    #             dump.write(i + "\n")
+    #             print(colored(i, "yellow"))
 
     # if ipv6:
     #     print(colored("\n[*] IPv6 addresses saved to: ", "green"))
@@ -209,7 +209,7 @@ if __name__ == '__main__':
     extracted_ip_output = {}
     for key, value in extracted_asn_output.items():
         print(colored(f"{key}: {value}", "blue"))
-        extracted_ip_output.update({key:extract_ip(key, org, output_path)})
+        extracted_ip_output.update({key:extract_ip(key, output_path)})
     
     print(colored(f"[*] IP addresses owned by {org} are the following:","green"))
     # print(colored(extracted_ip_output, "blue"))
@@ -230,6 +230,8 @@ if __name__ == '__main__':
     
     with open(f'{output_path}/dedupe_ip_addresses.json', 'w') as json_file:
         json.dump(extracted_ip_output, json_file)
-    # print(json.dumps(dedupeipaddresses, sort_keys=True, indent=4))
+    print(json.dumps(extracted_ip_output, sort_keys=True, indent=4))
     # print(colored(count, "cyan"))
     # print(len(dedupeipaddresses))
+    
+    print(colored(f"[+] {org} ASN search is completed.","cyan"))
