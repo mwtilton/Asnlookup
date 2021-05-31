@@ -4,13 +4,13 @@ import csv
 import sys
 import argparse
 import requests
-import re
+# import re
 import os
 import json
 
 from time import sleep
 from termcolor import colored
-from bs4 import BeautifulSoup
+# from bs4 import BeautifulSoup
 from zipfile import ZipFile
 
 requests.packages.urllib3.disable_warnings()
@@ -49,20 +49,15 @@ def check_licensekey(license_key):
             print (e)
             sys.exit(1)
 
-def download_db(download_link, org, useragent, output_path):
-    geolite_asn_zip_filepath = f'{output_path}/GeoLite2-ASN-CSV.zip'
-    #geolite_asn_filesize_filepath = f'/tmp/{org}/filesize.txt'
+def download_db(download_link, output_path):
     
+    geolite_asn_zip_filepath = f'{output_path}/GeoLite2-ASN-CSV.zip'
     geolite_asn_ipv4_csv_filepath = f'{output_path}/GeoLite2-ASN-Blocks-IPv4.csv'
-    #geolite_asn_ipv6_csv_filepath = f'/tmp/{org}/GeoLite2-ASN-Blocks-IPv6.csv'
-
-    if (os.path.exists(f'{output_path}') == False):
-        os.makedirs(f'{output_path}')
 
     # Download a local copy of ASN database from maxmind.com
     if (os.path.isfile(geolite_asn_ipv4_csv_filepath)) == False:
         print(colored("[*] Downloading ASN database ...\n", "red"))
-        os.system(f"wget -O {geolite_asn_zip_filepath} '{download_link}'") #&& unzip {geolite_asn_zip_filepath} && rm -f {geolite_asn_zip_filepath} && rm -f {geolite_asn_ipv6_csv_filepath} && rm -f COPYRIGHT.txt LICENSE.txt && rm -rf GeoLite*/")
+        os.system(f"wget -O {geolite_asn_zip_filepath} '{download_link}'")
         
         with ZipFile(geolite_asn_zip_filepath, 'r') as zip_ref:
             zip_ref.extractall(f'{output_path}')
@@ -74,20 +69,17 @@ def download_db(download_link, org, useragent, output_path):
 def extract_asn(organization, output_path):
     #read csv, and split on "," the line
     asn_ipv4 = csv.reader(open(f'{output_path}/GeoLite2-ASN-Blocks-IPv4.csv', "r"), delimiter=",")
-    #loop through csv list
     output = {}
 
+    #loop through ASN blocks list
     for row in asn_ipv4:
         #if current rows 2nd value is equal to input, print that row
-        # print(colored(f">> {organization}: {row[1]} {row[2]}", "blue"))
         if organization.upper().replace('_', ' ') in row[2].upper():
-            # print(colored(f">> {organization}: {row[1]} {row[2]}", "yellow"))
             output.update({row[1] : row[2]})
-            # extract_ip(row[1], organization, output_path)
     
     return(output)
 
-def extract_ip(asn, output_path):
+def extract_ip(asn):
 
     ipinfo = f"https://api.bgpview.io/asn/AS{asn}/prefixes"
     
@@ -112,23 +104,27 @@ if __name__ == '__main__':
     banner()
     org = (parse_args().org).replace(' ', '_')
     license_key = parse_args().license
-    # token = parse_args().token
-    output_path = os.path.join(parse_args().output, org)
     
-    if output_path is None:
+    if parse_args().output is None:
         output_path = os.path.join(f'/tmp/{org}', 'output')
+    else:
+        output_path = os.path.join(parse_args().output, f'{org}/output')
+
+    if (os.path.exists(f'{output_path}') == False):
+        os.makedirs(f'{output_path}')
 
     print(f"ASN Output Path: {output_path}")
     if not os.path.exists(output_path):
         os.makedirs(output_path)
 
-    useragent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:64.0) Gecko/20100101 Firefox/64.0'
-    download_link = 'https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-ASN-CSV&license_key={}&suffix=zip'.format(license_key)
+    # useragent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:64.0) Gecko/20100101 Firefox/64.0'
+    # download_link = 'https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-ASN-CSV&license_key={}&suffix=zip'.format(license_key)
+    download_link = f'https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-ASN-CSV&license_key={license_key}&suffix=zip'
 
     print(f"Checking License Key...")
     check_licensekey(license_key)
     
-    download_db(download_link, org, useragent, output_path)
+    download_db(license_key, output_path)
 
     extracted_asn_output = extract_asn(org, output_path)
     with open(f'{output_path}/extracted_asn_output.json', 'w') as json_file:
@@ -137,7 +133,7 @@ if __name__ == '__main__':
     extracted_ip_output = {}
     for key, value in extracted_asn_output.items():
         print(colored(f"{key}: {value}", "blue"))
-        extracted_ip_output.update({key:extract_ip(key, output_path)})
+        extracted_ip_output.update({key:extract_ip(key)})
     
     print(colored(f"[*] IP addresses owned by {org} are the following:","green"))
     print(json.dumps(extracted_ip_output, sort_keys=True, indent=4))
@@ -152,7 +148,6 @@ if __name__ == '__main__':
     for key, value in extracted_ip_output.items():
         count += len(value)
         for ky, val in value.items():
-            # print(colored(ky, "blue"))
             dedupeipaddresses.update({ky:''})
     
     with open(f'{output_path}/dedupe_ip_addresses.json', 'w') as json_file:
