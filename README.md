@@ -2,10 +2,7 @@
                                 |__| [__  |\ | |    |  | |  | |_/  |  | |__]
                                 |  | ___] | \| |___ |__| |__| | \_ |__| |
 
-                                         Author: Yassine Aboukir
- 
- <p align="center"><a target="_blank" href="https://twitter.com/yassineaboukir"><img src="https://img.shields.io/twitter/follow/yassineaboukir.svg?logo=twitter"></a></p>
- 
+                                         Author: mwtilton
 
  ## Description
 >An autonomous system number (ASN) is a unique number assigned to an autonomous system (AS) by the Internet Assigned Numbers Authority (IANA).
@@ -44,3 +41,10 @@ _E.g: python asnlookup -o "Capital One"_
 
 ## Limitation
 For smaller organizations the ASN will usually be that of their ISP whereas the hostname might not. One example of this is 207.97.227.245, a GitHub IP address. The ASN is AS27357 (Rackspace Hosting), but the hostname is pages.github.com.
+
+# Other API endpoints
+[ ] ipinfo.io/[IP address]?token=
+[ ] https://ipinfo.io/AS5586/json?token=
+[ ] https://stat.ripe.net/data/as-overview/data.json?resource=AS3333
+[ ] ipinfo = f"https://ipinfo.io/AS{asn}/json?token={token}"
+[ ] ipinfo = f"https://stat.ripe.net/data/as-overview/data.json?resource=AS{asn}"

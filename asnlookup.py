@@ -20,17 +20,16 @@ def banner():
         ____ ____ _  _ _    ____ ____ _  _ _  _ ___
         |__| [__  |\ | |    |  | |  | |_/  |  | |__]
         |  | ___] | \| |___ |__| |__| | \_ |__| |
-        ''')
 
-# def get_license_key():
-#     return os.getenv('LICENSE_KEY')
+Author: mwtilton
+Version: 1.0.2
+        ''')
 
 def parse_args():
     # parse the argument
-    parser = argparse.ArgumentParser(epilog='\tExample: \r\npython ' + sys.argv[0] + " -o twitter")
+    parser = argparse.ArgumentParser(epilog='\tExample: \r\npython ' + sys.argv[0] + " -o twitter -l <license key>")
     org = parser.add_argument('-o', '--org', help="Organization to look up", required=True)
     license = parser.add_argument('-l', '--license', help="License to use for maxmind.", required=True)
-    # token = parser.add_argument('-t', '--token', help="Token to use for ipinfo.", required=True)
     output = parser.add_argument('--output', help="Output path (optional)", required=False, default=None)
     return parser.parse_args()
 
@@ -90,20 +89,10 @@ def extract_asn(organization, output_path):
 
 def extract_ip(asn, output_path):
 
-    # path_ipv6 = os.path.join(f"{output_path}/ipv6.txt")
-    path_ipv4 = os.path.join(f"{output_path}/AS-{asn}-ipv4.txt")
-
-    # ipinfo.io/[IP address]?token=
-    # https://ipinfo.io/AS5586/json?token=
-    # https://stat.ripe.net/data/as-overview/data.json?resource=AS3333
-    # ipinfo = f"https://ipinfo.io/AS{asn}/json?token={token}"
-    # ipinfo = f"https://stat.ripe.net/data/as-overview/data.json?resource=AS{asn}"
     ipinfo = f"https://api.bgpview.io/asn/AS{asn}/prefixes"
-    # print(colored(f"[*] {ipinfo}", "yellow"))
+    
     try:
-        # response = requests.get(ipinfo)
         response = requests.get(ipinfo, headers={'accept': 'application/json'})
-
     except:
         print(colored("[*] Timed out while trying to the ASN lookup server, please run the tool again.", "red"))
         sys.exit(1)
@@ -111,72 +100,13 @@ def extract_ip(asn, output_path):
     # Requires Rest between API calls, otherwise it will return none
     sleep(1)
     jsondata = response.json()
-    # print(json.dumps(jsondata, sort_keys=True, indent=4))    
-    # print(json.dumps(jsondata['data']['ipv4_prefixes'], sort_keys=True, indent=4))    
     
     ipv4 = {}
     
     for cidr in jsondata['data']['ipv4_prefixes']:
-        # print(cidr['prefix'])
         ipv4.update({cidr['prefix']:cidr['description']})
-    # print(len(jsondata['data']['ipv4_prefixes']))
-    # print(len(ipv4))
     
     return(ipv4)
-    # print(colored(ipv4, "blue"))
-    # html = response.content
-    # if html is None:
-    #     print(colored("[*] no html content found.", "red"))
-    #     exit(1)
-    
-    # print(html)
-    # print(json.dumps(html, sort_keys=True, indent=4))    
-
-    # soup = BeautifulSoup(html, 'html.parser')
-    # if soup is None:
-    #     print(colored("[*] no soup content found in html.", "red"))
-    #     exit(1)
-
-    # print(json.dumps(soup, sort_keys=True, indent=4))    
-    
-    # print(soup)
-
-    
-    
-    # for link in soup.find_all('a'):
-    #     print(colored(link, "blue"))
-    #     print(colored(asn, "blue"))
-        
-    #     if asn in link.get('href'):
-    #         search_criteria = '/' + "AS" + asn + '/'
-    #         ip = re.sub(search_criteria, '', link.get('href'))
-            
-    #         print(colored(asn, "green"))
-
-    #         if "robtex" not in ip:
-    #             if ":" in ip:
-    #                 ipv6.append(ip)
-    #             else: 
-    #                 print(colored(ip, "green"))
-    #                 ipv4.append(ip)
-    #         else: 
-    #             pass
-
-    # if ipv4:
-    #     print(colored(f"[*] IPv4 addresses saved to {path_ipv4}", "green"))
-    #     # print(colored("{}\n".format(path_ipv4), "yellow"))
-    #     with open(path_ipv4, "w") as dump:
-    #         for i in ipv4:
-    #             dump.write(i + "\n")
-    #             print(colored(i, "yellow"))
-
-    # if ipv6:
-    #     print(colored("\n[*] IPv6 addresses saved to: ", "green"))
-    #     print(colored("{}\n".format(path_ipv6), "yellow"))
-    #     with open(path_ipv6, "w") as dump:
-    #         for i in ipv6:
-    #             dump.write(i + "\n")
-    #             print(colored(i, "yellow"))
 
 if __name__ == '__main__':
     banner()
@@ -203,8 +133,6 @@ if __name__ == '__main__':
     extracted_asn_output = extract_asn(org, output_path)
     with open(f'{output_path}/extracted_asn_output.json', 'w') as json_file:
         json.dump(extracted_asn_output, json_file)
-    # print(colored(extracted_asn_output,"cyan"))
-    # print(len(extracted_asn_output))
 
     extracted_ip_output = {}
     for key, value in extracted_asn_output.items():
@@ -212,14 +140,13 @@ if __name__ == '__main__':
         extracted_ip_output.update({key:extract_ip(key, output_path)})
     
     print(colored(f"[*] IP addresses owned by {org} are the following:","green"))
-    # print(colored(extracted_ip_output, "blue"))
     print(json.dumps(extracted_ip_output, sort_keys=True, indent=4))
 
     with open(f'{output_path}/extracted_ip_output.json', 'w') as json_file:
         json.dump(extracted_ip_output, json_file)
 
     print(colored(f"[*] DeDupe IP addresses owned by {org} are the following:","green"))
-    # for key, value in extracted_asn_output.items():
+
     dedupeipaddresses = {}
     count = 0
     for key, value in extracted_ip_output.items():
@@ -231,7 +158,5 @@ if __name__ == '__main__':
     with open(f'{output_path}/dedupe_ip_addresses.json', 'w') as json_file:
         json.dump(extracted_ip_output, json_file)
     print(json.dumps(extracted_ip_output, sort_keys=True, indent=4))
-    # print(colored(count, "cyan"))
-    # print(len(dedupeipaddresses))
     
     print(colored(f"[+] {org} ASN search is completed.","cyan"))
