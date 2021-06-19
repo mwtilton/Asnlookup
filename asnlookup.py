@@ -124,7 +124,7 @@ if __name__ == '__main__':
     print(f"Checking License Key...")
     check_licensekey(license_key)
     
-    download_db(license_key, output_path)
+    download_db(download_link, output_path)
 
     extracted_asn_output = extract_asn(org, output_path)
     with open(f'{output_path}/extracted_asn_output.json', 'w') as json_file:
